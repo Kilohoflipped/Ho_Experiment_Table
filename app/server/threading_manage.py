@@ -1,8 +1,7 @@
 from app.server.server_client import serverData
 from app.server.data_processor import dataProcessor
 from threading import Thread
-
-
+from app.Gui import tableGUI
 class threadingManager:
     def __init__(self):
         server_ip = "192.168.31.28"  # 设置服务器（PC）的IP地址
@@ -17,3 +16,8 @@ class threadingManager:
         data_process_thread = Thread(target=data_processor.dataProcess, args=(file_path,))
         data_process_thread.start()
         data_process_thread.join()
+
+        # 创建一个线程来执行Gui
+        gui_thread = Thread(target=tableGUI)
+        gui_thread.start()
+        gui_thread.join()
