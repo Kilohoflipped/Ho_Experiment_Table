@@ -1,0 +1,35 @@
+name: "代码扫描🧑🏼‍💻防止大脑降级"
+
+on:
+  push:
+  branches: [main]
+  pull_request:
+  branches: [**]
+
+jobs:
+  CodeQL-Build:
+    # CodeQL runs on ubuntu-latest, windows-latest, and macos-latest
+    runs-on: ubuntu-latest
+    
+        permissions:
+      # required for all workflows
+      security-events: write
+
+      # only required for workflows in private repositories
+      actions: read
+      contents: read
+
+    steps:
+      - name: 签出代码
+        uses: actions/checkout@latest
+
+      - name: 初始化检查
+        uses: github/codeql-action/init@latest
+          with: 
+            languages: python
+
+      - name: 自动构建
+        uses: github/codeql-action/autobuild@v2
+        
+      - name: 代码扫描
+        uses: github/codeql-action/analyze@v2
