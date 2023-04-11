@@ -5,13 +5,15 @@ from scipy.signal import find_peaks
 import threading
 import time
 from re import search
+from collections import deque
 
 
 class paraSignal:
-    def __init__(self, source):
+    def __init__(self, source, dequeLength=30000):
         self.source = source
-        self.time = np.array([])
-        self.voltage = np.array([])
+        self.dequeLength = dequeLength
+        self.time = deque(maxlen=dequeLength)
+        self.voltage = deque(maxlen=dequeLength)
         self.rms = None
         self.period = None
         self.frequency = None
