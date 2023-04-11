@@ -1,0 +1,22 @@
+#MCUGroupObjectName {
+    color: black;
+    font: 20px 'HarmonyOS Sans', 'Microsoft YaHei';
+    font-weight: bold;
+}
+
+#groupIDLabel {
+    color: black;
+    font: 14px 'HarmonyOS Sans', 'Microsoft YaHei';
+    font-weight: bold;
+}
+
+MCUCard {
+    border: 1px solid rgb(234, 234, 234);
+    border-radius: 6px;
+    background-color: rgb(253, 253, 253);
+}
+
+MCUCard:hover {
+    background-color: rgb(251, 251, 251);
+    border-color: rgb(177, 177, 177);
+}

@@ -1,0 +1,20 @@
+{
+    "Material": {
+        "AcrylicBlurRadius": 14
+    },
+    "Update": {
+        "CheckUpdateAtStartUp": true
+    },
+    "Folders": {
+        "Download": "E:/Kilo/Codes/Python/Ho_Experi_Table/examples/gallery/app/download",
+        "LocalMusic": []
+    },
+    "MainWindow": {
+        "DpiScale": "Auto",
+        "Language": "zh"
+    },
+    "QFluentWidgets": {
+        "ThemeColor": "#ff002a",
+        "ThemeMode": "Light"
+    }
+}
