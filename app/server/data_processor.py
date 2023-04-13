@@ -2,43 +2,46 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.signal import find_peaks
-import threading
-import time
 from re import search
 from collections import deque
+from threading import Timer
+from queue import Queue, Empty
+from copy import deepcopy
 
 
 class paraSignal:
-    def __init__(self, source, dequeLength=30000):
+    def __init__(self, source, data_queue):
         self.source = source
-        self.dequeLength = dequeLength
-        self.time = deque(maxlen=dequeLength)
-        self.voltage = deque(maxlen=dequeLength)
+        self.data_queue = data_queue
+        self.time = []
+        self.voltage = []
         self.rms = None
         self.period = None
         self.frequency = None
         self.samplingRate = None
+        self.parasCalculate()
+        self.print_statistics()
 
-    def parasCalculate(self, data):
-        time, voltage = [], []
+    def parasCalculate(self):
+        data = list(self.data_queue.dataQueue)
+        time, voltage = self.data_queue.dataQueue[:]['Time'], self.data_queue.dataQueue['voltage']
         for line in data:
             if line:
-                timeAbstract = search(r'\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}.\d+', line).group(0)
-                voltageAbstract = search(r'\d+\.\d+', line.split(',')[1]).group()
+                timeAbstract = search(r"Time:(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d+)", line).group(1)
+                voltageAbstract = search(r"ADC:(\d+\.\d+)", line).group(1)
                 time.append(pd.to_datetime(timeAbstract, format='%Y-%m-%d %H:%M:%S.%f'))
                 voltage.append(float(voltageAbstract))
-        self.time = np.append(self.time, np.array(time))
-        self.voltage = np.append(self.voltage, np.array(voltage))
+        self.time.extend(time)
+        self.voltage.extend(voltage)
         self.rmsCalculate()
         self.samplingRateCalculate()
         self.periodFreqCalculate()
 
     def rmsCalculate(self):
-        self.rms = np.sqrt(np.mean(np.square(self.voltage)))
+        self.rms = np.sqrt(np.mean(np.square(np.array(self.voltage))))
 
     def periodFreqCalculate(self):
-
-        dft = np.fft.fft(self.voltage)
+        dft = np.fft.fft(np.array(self.voltage))
         acf = np.fft.ifft(dft * np.conjugate(dft))
         peaks, _ = find_peaks(np.abs(acf))
         T = peaks[0]
@@ -49,7 +52,7 @@ class paraSignal:
         if len(self.time) >= 2:
             timeDelta = self.time[-1] - self.time[0]
             timeDelta = timeDelta.value * 1e-9
-            self.samplingRate = self.time.size / timeDelta
+            self.samplingRate = len(self.time) / timeDelta
 
     def plot_signal(self):
         plt.plot(self.time, self.voltage)
@@ -72,26 +75,15 @@ class paraSignal:
 
 
 class dataProcessor:
-    def __init__(self):
-        self.signal_objects = {}
+    def __init__(self, dataProcessQueue):
+        self.signal_objects = None
+        self.dataProcessQueue = dataProcessQueue
 
-    def process_file(self, file_path):
-        with open(file_path, 'r') as f:
-            data = f.read()
-            source = search(r"Source:\s(\d+)", data.split("\n")[0])  # 提取第一行数据确定数据来源
-            source = source.group(1)
-            if source not in self.signal_objects:
-                self.signal_objects[source] = paraSignal(source)  # 实例化Signal参数对象，初始化值
-            signal = self.signal_objects[source]
-            data = data.split('\n')
-            data = data[-30000:]
-            signal.parasCalculate(data)
-        print('Processed file {}'.format(file_path))
-        signal.print_statistics()
-
-    def dataProcess(self, file_path):
-        t = threading.Thread(target=self.process_file, args=(file_path,))
-        t.start()
-        while t.is_alive():
-            time.sleep(1)  # Wait until thread finishes processing
-        print('All files processed')
+    def processData(self):
+        while not self.dataProcessQueue.dataQueue.empty():
+            source = self.dataProcessQueue.dataQueue[0]['Source']  # 提取第一行数据确定数据来源
+            with self.dataProcessQueue.lock:
+                willProcessData = list(self.dataProcessQueue.dataQueue)
+            self.signal_objects = paraSignal(source, willProcessData)  # 实例化Signal参数对象，初始化值，保存队列的快照
+            print('Processed data')
+        Timer(5, self.processData).start()  # 递归调用自己，保持连接
