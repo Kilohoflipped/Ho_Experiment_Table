@@ -7,6 +7,7 @@ from queue import Queue
 
 class queueWithLock:
     def __init__(self, queueLength):
+        self.queueLength = queueLength
         self.dataQueue = Queue(maxsize=queueLength)
         self.lock = Lock()
 
@@ -16,11 +17,11 @@ class MCUDevice:
         dataProcessQueue = queueWithLock(30000)
         picDrawQueue = queueWithLock(30000)
 
-        # 创建 DataProcessor 实例
-        data_processor = dataProcessor(dataProcessQueue)
-
         # 创建ServerClient实例
         serverClient1 = serverClient(serverIP, serverPort, dataProcessQueue)
+
+        # 创建 DataProcessor 实例
+        data_processor = dataProcessor(dataProcessQueue)
 
         # 创建一个线程来接受数据
         data_receive_thread = Thread(target=serverClient1.startServer)

@@ -80,10 +80,11 @@ class dataProcessor:
         self.dataProcessQueue = dataProcessQueue
 
     def processData(self):
-        while not self.dataProcessQueue.dataQueue.empty():
-            source = self.dataProcessQueue.dataQueue[0]['Source']  # 提取第一行数据确定数据来源
+        while self.dataProcessQueue.dataQueue.full():
+            source = self.dataProcessQueue.dataQueue.queue[0]['Source']  # 提取第一行数据确定数据来源
             with self.dataProcessQueue.lock:
-                willProcessData = list(self.dataProcessQueue.dataQueue)
-            self.signal_objects = paraSignal(source, willProcessData)  # 实例化Signal参数对象，初始化值，保存队列的快照
+                # 实例化Signal参数对象，初始化值，保存队列的快照
+                self.signal_objects = paraSignal(source, self.dataProcessQueue.dataQueue.queue)
+                self.dataProcessQueue.dataQueue = Queue(maxsize=self.dataProcessQueue.queueLength)  # 清空队列
             print('Processed data')
-        Timer(5, self.processData).start()  # 递归调用自己，保持连接
+        Timer(2, self.processData).start()  # 递归调用自己，保持连接
