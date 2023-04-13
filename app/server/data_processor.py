@@ -7,6 +7,7 @@ from collections import deque
 from threading import Timer
 from queue import Queue, Empty
 from copy import deepcopy
+from collections import Counter
 
 
 class paraSignal:
@@ -23,16 +24,7 @@ class paraSignal:
         self.print_statistics()
 
     def parasCalculate(self):
-        data = list(self.data_queue.dataQueue)
-        time, voltage = self.data_queue.dataQueue[:]['Time'], self.data_queue.dataQueue['voltage']
-        for line in data:
-            if line:
-                timeAbstract = search(r"Time:(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d+)", line).group(1)
-                voltageAbstract = search(r"ADC:(\d+\.\d+)", line).group(1)
-                time.append(pd.to_datetime(timeAbstract, format='%Y-%m-%d %H:%M:%S.%f'))
-                voltage.append(float(voltageAbstract))
-        self.time.extend(time)
-        self.voltage.extend(voltage)
+        self.time, self.voltage = zip(*((item['Time'], item['adcVoltage']) for item in self.data_queue))
         self.rmsCalculate()
         self.samplingRateCalculate()
         self.periodFreqCalculate()
@@ -44,15 +36,18 @@ class paraSignal:
         dft = np.fft.fft(np.array(self.voltage))
         acf = np.fft.ifft(dft * np.conjugate(dft))
         peaks, _ = find_peaks(np.abs(acf))
-        T = peaks[0]
-        self.period = T * 1 / self.samplingRate
+        peaks = np.insert(peaks, 0, 0)
+        peaksDiff = np.diff(peaks).tolist()
+        sortedCounts = dict(sorted(Counter(peaksDiff).items(), key=lambda item: item[1], reverse=True))
+        maxLikelihoodPeriod, _ = list(sortedCounts.items())[0]
+        self.period = maxLikelihoodPeriod / self.samplingRate
         self.frequency = 1 / self.period
 
     def samplingRateCalculate(self):
         if len(self.time) >= 2:
-            timeDelta = self.time[-1] - self.time[0]
-            timeDelta = timeDelta.value * 1e-9
-            self.samplingRate = len(self.time) / timeDelta
+            timeArrange = self.time[-1] - self.time[0]
+            timeArrange = timeArrange.value * 1e-9
+            self.samplingRate = len(self.time) / timeArrange
 
     def plot_signal(self):
         plt.plot(self.time, self.voltage)
