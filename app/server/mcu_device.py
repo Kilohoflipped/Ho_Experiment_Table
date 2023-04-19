@@ -1,40 +1,83 @@
 from app.server.server_client import serverClient
 from app.server.data_processor import dataProcessor
-from threading import Thread, Lock
 from app.Gui import tableGUI
 from queue import Queue
+from PyQt6.QtCore import QObject, pyqtSignal, QThread, QMutex
 
 
-class queueWithLock:
+class QueueWithLock:
     def __init__(self, queueLength):
         self.queueLength = queueLength
         self.dataQueue = Queue(maxsize=queueLength)
-        self.lock = Lock()
+        self.mutex = QMutex()
+
+
+class MCUState:
+    def __init__(self):
+        self.rms = None
+        self.period = None
+        self.frequency = None
+        self.samplingRate = None
+        self.workState = None
+        self.group = None
+        self.index = None
+        self.fig = None
+
+
+class MCUStateTransSignal(QObject):
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+        self.pyQtSignal = pyqtSignal(MCUState)
+
+
+class ServerClientThread(QThread):
+    def __init__(self, serverIP, serverPort, dataProcessQueue, parent=None):
+        super().__init__(parent=parent)
+        self.serverClientInstance = serverClient(serverIP, serverPort, dataProcessQueue)
+
+    def run(self):
+        self.serverClientInstance.startServer()
+
+
+class DataProcessorThread(QThread):
+    def __init__(self, dataProcessQueue, MCUStateTransSignalInstance, parent=None):
+        super().__init__(parent=parent)
+        self.dataProcessorInstance = dataProcessor(dataProcessQueue, MCUStateTransSignalInstance)
+
+    def run(self):
+        self.dataProcessorInstance.processData()
+
+
+class GUIThread(QThread):
+    def __init__(self):
+        super().__init__()
+        self.GUI = None
+
+    def run(self):
+        self.GUI = tableGUI()
 
 
 class MCUDevice:
     def __init__(self, serverIP, serverPort):
-        dataProcessQueue = queueWithLock(30000)
-        picDrawQueue = queueWithLock(30000)
+        self.dataProcessorThreadInstance = None
+        self.serverClientThreadInstance = None
+        self.GUIThreadInstance = None
+        self.MCUStateTransSignalInstance = MCUStateTransSignal()  # 在各个线程间通讯的Qt事件
+        self.serverIP = serverIP
+        self.serverPort = serverPort
+        self.dataProcessQueue = QueueWithLock(10000)
+        picDrawQueue = QueueWithLock(10000)
+        self.ThreadsManager()
 
-        # 创建ServerClient实例
-        serverClient1 = serverClient(serverIP, serverPort, dataProcessQueue)
-
-        # 创建 DataProcessor 实例
-        data_processor = dataProcessor(dataProcessQueue)
-
-        # 创建一个线程来接受数据
-        data_receive_thread = Thread(target=serverClient1.startServer)
-        data_receive_thread.start()
-
-        # 创建一个线程来处理文件
-        data_process_thread = Thread(target=data_processor.processData)
-        data_process_thread.start()
-
+    def ThreadsManager(self):
         # 创建一个线程来执行Gui
-        gui_thread = Thread(target=tableGUI)
-        gui_thread.start()
+        self.GUIThreadInstance = GUIThread()
+        self.GUIThreadInstance.start()
 
-        data_receive_thread.join()
-        data_process_thread.join()
-        gui_thread.join()
+        # 创建ServerClient 线程实例
+        self.serverClientThreadInstance = ServerClientThread(self.serverIP, self.serverPort, self.dataProcessQueue)
+        self.serverClientThreadInstance.start()
+
+        # 创建 DataProcessor 线程实例
+        self.dataProcessorThreadInstance = DataProcessorThread(self.dataProcessQueue, self.MCUStateTransSignalInstance)
+        self.dataProcessorThreadInstance.start()

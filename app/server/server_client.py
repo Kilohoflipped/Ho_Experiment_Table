@@ -1,9 +1,8 @@
 import socket
-from threading import Thread
 from arrow import now
 from threading import Timer
-import queue
 import pandas as pd
+from PyQt6.QtCore import QMutexLocker
 
 
 class serverClient:
@@ -61,10 +60,11 @@ class serverClient:
                                 "Time": pd.to_datetime(now().datetime),
                                 "adcVoltage": adcResult
                             }
-                            with self.dataProcessQueue.lock:
+                            with QMutexLocker(self.dataProcessQueue.mutex):
                                 if self.dataProcessQueue.dataQueue.full():
                                     self.dataProcessQueue.dataQueue.get()
                                 self.dataProcessQueue.dataQueue.put(dataItem)  # 将数据加入队列
+                                pass
                             buffer.clear()  # 清空缓冲区
                         else:
                             buffer.clear()

@@ -90,6 +90,9 @@ class MCUCard(QFrame):
         self.freqLabel = QLabel("当前频率:126.263643Hz", parent=self)
         self.view.viewRight.vBoxLayout.addWidget(self.freqLabel)
 
+    def uptateCardWithSignal(self):
+        self.group
+
 
 class MCUCardView(QWidget):
     """ MCU Card view """
@@ -111,7 +114,7 @@ class MCUCardView(QWidget):
         self.groupIDLabel.setObjectName('MCUGroupObjectName')
         self.__setQss()
 
-    def addMCUcard(self, workState, group, index, ratedCurrent, ratedFreq, parent=None):
+    def addMCUCard(self, workState, group, index, ratedCurrent, ratedFreq, parent=None):
         newMCUCard = MCUCard(workState, group, index, ratedCurrent, ratedFreq, parent=self)
         self.flowLayout.addWidget(newMCUCard)
 

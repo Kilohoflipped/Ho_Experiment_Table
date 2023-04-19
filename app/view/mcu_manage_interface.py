@@ -33,7 +33,7 @@ class MCUManageInterface(ScrollArea):
     def __loadMCUS(self):
         MCUCardViewGroup1 = MCUCardView(title=self.tr('Group 1'), parent=self.view)
 
-        MCUCardViewGroup1.addMCUcard(
+        MCUCardViewGroup1.addMCUCard(
             workState=0,
             group=1,
             index=1,
