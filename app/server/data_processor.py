@@ -66,11 +66,11 @@ class paraSignal:
 
 
 class dataProcessor:
-    def __init__(self, dataProcessQueue, MCUStateTransSignalInstance):
+    def __init__(self, dataProcessQueue, PyQtSignalManagerInstance):
         self.fig = None
         self.signalObjects = None
         self.dataProcessQueue = dataProcessQueue
-        self.MCUStateTransSignalInstance = MCUStateTransSignalInstance
+        self.PyQtSignalManagerInstance = PyQtSignalManagerInstance
 
     def processData(self):
         while self.dataProcessQueue.dataQueue.full():
@@ -81,7 +81,7 @@ class dataProcessor:
                 self.signalObjects.parasCalculate()
                 self.signalObjects.print_statistics()
                 self.plotSignal()
-
+                self.PyQtSignalEmit()  # 把处理好的数据发送给Slot
                 self.dataProcessQueue.dataQueue = Queue(maxsize=self.dataProcessQueue.queueLength)  # 清空队列
                 pass
             print('Processed data')
@@ -111,4 +111,4 @@ class dataProcessor:
         MCUStateInstance.samplingRate = self.signalObjects.samplingRate
         MCUStateInstance.workState = self.signalObjects.workState
         MCUStateInstance.fig = self.fig
-        self.MCUStateTransSignalInstance.pyQtSignal.emit(MCUStateInstance)
+        self.PyQtSignalManagerInstance.pyQtSignal.emit(MCUStateInstance)

@@ -36,7 +36,7 @@ class tableGUI:
         app.installTranslator(galleryTranslator)
 
         # create main window
-        self.window = MainWindow()
-        self.window.show()
+        w = MainWindow()
+        w.show()
 
         app.exec()
