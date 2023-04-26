@@ -5,7 +5,7 @@ from PyQt6.QtGui import QPainter, QBrush, QColor, QPixmap
 from PyQt6.QtSvg import QSvgRenderer
 
 from qfluentwidgets import IconWidget, TextWrap, FlowLayout, isDarkTheme
-
+from app.common.QtSignalBus import QtAppSignalBus
 from app.common.signal_bus import signalBus
 from app.common.config import cfg
 
@@ -15,7 +15,6 @@ class MCUCard(QFrame):
 
     def __init__(self, workState, group, index, ratedCurrent, ratedFreq, parent=None):
         """ workState: 0:OffLine  1:Online  2:Suspected malfunction """
-
         super().__init__(parent=parent)
 
         # 保存组别、编号、工作状态信息
@@ -25,6 +24,12 @@ class MCUCard(QFrame):
         self.ratedFreq = ratedFreq
         self.workState = workState
 
+        # 连接Label更新信号与槽函数
+        if str(self.index) in QtAppSignalBus.QtSignalStream['MCUSignals']:  # 如果总线上存在对应编号的信号
+            # 连接信号和槽函数
+            QtAppSignalBus.getSignal(str(self.index), 'MCUSignals').connect(self.uptateCardWithSignal)
+
+        # 创建所有View组件
         self.view = QWidget(parent=self)
         self.view.iconView = QWidget(parent=self.view)
         self.view.viewLeft = QWidget(parent=self.view)
@@ -33,6 +38,7 @@ class MCUCard(QFrame):
         self.view.viewLeft.viewLeftTop = QWidget(parent=self.view.viewLeft)
         self.view.viewLeft.viewLeftBottom = QWidget(parent=self.view.viewLeft)
 
+        # 创建布局
         self.view.hBoxLayout = QHBoxLayout(self)  # 整体布局
         self.view.hBoxLayout.setSpacing(0)
 
@@ -52,6 +58,7 @@ class MCUCard(QFrame):
         self.view.viewRight.vBoxLayout = QVBoxLayout(self.view.viewRight)
         self.view.hBoxLayout.addWidget(self.view.viewRight)  # 将右侧布局添加至整体布局中
 
+        # 图标
         iconSize = 100
         scaledK = 10
         colorRed = QColor(255, 74, 0)
@@ -91,7 +98,7 @@ class MCUCard(QFrame):
         self.view.viewRight.vBoxLayout.addWidget(self.freqLabel)
 
     def uptateCardWithSignal(self):
-        self.group
+        pass
 
 
 class MCUCardView(QWidget):

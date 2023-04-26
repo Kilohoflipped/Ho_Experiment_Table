@@ -36,7 +36,7 @@ class MCUManageInterface(ScrollArea):
         MCUCardViewGroup1.addMCUCard(
             workState=0,
             group=1,
-            index=1,
+            index=0,
             ratedCurrent=4,
             ratedFreq=1)
 

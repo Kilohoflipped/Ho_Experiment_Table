@@ -7,7 +7,21 @@ from queue import Queue
 from collections import Counter
 import seaborn as sns
 from PyQt6.QtCore import pyqtSignal, QMutexLocker
-from app.server.mcu_device import MCUState
+
+from app.common.QtSignalBus import QtAppSignalBus
+
+
+class MCUState(dict):
+    def __init__(self):
+        super(MCUState, self).__init__()
+        self['rms'] = None
+        self['period'] = None
+        self['frequency'] = None
+        self['samplingRate'] = None
+        self['workState'] = None
+        self['group'] = None
+        self['index'] = None
+        self['fig'] = None
 
 
 class paraSignal:
@@ -66,11 +80,10 @@ class paraSignal:
 
 
 class dataProcessor:
-    def __init__(self, dataProcessQueue, PyQtSignalManagerInstance):
+    def __init__(self, dataProcessQueue):
         self.fig = None
         self.signalObjects = None
         self.dataProcessQueue = dataProcessQueue
-        self.PyQtSignalManagerInstance = PyQtSignalManagerInstance
 
     def processData(self):
         while self.dataProcessQueue.dataQueue.full():
@@ -103,12 +116,12 @@ class dataProcessor:
 
     def PyQtSignalEmit(self):
         MCUStateInstance = MCUState()
-        MCUStateInstance.group = self.signalObjects.group
-        MCUStateInstance.index = self.signalObjects.index
-        MCUStateInstance.rms = self.signalObjects.rms
-        MCUStateInstance.period = self.signalObjects.period
-        MCUStateInstance.frequency = self.signalObjects.frequency
-        MCUStateInstance.samplingRate = self.signalObjects.samplingRate
-        MCUStateInstance.workState = self.signalObjects.workState
-        MCUStateInstance.fig = self.fig
-        self.PyQtSignalManagerInstance.pyQtSignal.emit(MCUStateInstance)
+        MCUStateInstance['group'] = self.signalObjects.group
+        MCUStateInstance['index'] = self.signalObjects.index
+        MCUStateInstance['rms'] = self.signalObjects.rms
+        MCUStateInstance['period'] = self.signalObjects.period
+        MCUStateInstance['frequency'] = self.signalObjects.frequency
+        MCUStateInstance['samplingRate'] = self.signalObjects.samplingRate
+        MCUStateInstance['workState'] = self.signalObjects.workState
+        MCUStateInstance['fig'] = self.fig
+        QtAppSignalBus.getSignal('1', 'MCUSignals').emit(MCUStateInstance)

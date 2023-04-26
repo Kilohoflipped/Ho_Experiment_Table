@@ -2,6 +2,7 @@ from app.server.server_client import serverClient
 from app.server.data_processor import dataProcessor
 from queue import Queue
 from PyQt6.QtCore import QObject, pyqtSignal, QThread, QMutex
+from app.common.QtSignalBus import QtAppSignalBus
 
 
 class QueueWithLock:
@@ -9,18 +10,6 @@ class QueueWithLock:
         self.queueLength = queueLength
         self.dataQueue = Queue(maxsize=queueLength)
         self.mutex = QMutex()
-
-
-class MCUState:
-    def __init__(self):
-        self.rms = None
-        self.period = None
-        self.frequency = None
-        self.samplingRate = None
-        self.workState = None
-        self.group = None
-        self.index = None
-        self.fig = None
 
 
 class ServerClientThread(QThread):
@@ -33,17 +22,16 @@ class ServerClientThread(QThread):
 
 
 class DataProcessorThread(QThread):
-    def __init__(self, dataProcessQueue, AppQtSignalBus, parent=None):
+    def __init__(self, dataProcessQueue, parent=None):
         super().__init__(parent=parent)
-        self.dataProcessorInstance = dataProcessor(dataProcessQueue, AppQtSignalBus)
+        self.dataProcessorInstance = dataProcessor(dataProcessQueue)
 
     def run(self):
         self.dataProcessorInstance.processData()
 
 
 class MCUDevice:
-    def __init__(self, serverIP, serverPort, AppQtSignalBus):
-        self.AppQtSignalBus = AppQtSignalBus  # Qt信号总线
+    def __init__(self, serverIP, serverPort):
         self.dataProcessorThreadInstance = None
         self.serverClientThreadInstance = None
         self.serverIP = serverIP
@@ -59,5 +47,5 @@ class MCUDevice:
         self.serverClientThreadInstance.start()
 
         # 创建 DataProcessor 线程实例
-        self.dataProcessorThreadInstance = DataProcessorThread(self.dataProcessQueue, self.AppQtSignalBus)
+        self.dataProcessorThreadInstance = DataProcessorThread(self.dataProcessQueue)
         self.dataProcessorThreadInstance.start()
