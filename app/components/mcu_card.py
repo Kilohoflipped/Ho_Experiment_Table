@@ -25,9 +25,9 @@ class MCUCard(QFrame):
         self.workState = workState
 
         # 连接Label更新信号与槽函数
-        if str(self.index) in QtAppSignalBus.QtSignalStream['MCUSignals']:  # 如果总线上存在对应编号的信号
-            # 连接信号和槽函数
-            QtAppSignalBus.getSignal(str(self.index), 'MCUSignals').connect(self.uptateCardWithSignal)
+        # if str(self.index) in QtAppSignalBus.QtSignalStream['MCUSignals']:  # 如果总线上存在对应编号的信号
+        #     # 连接信号和槽函数
+        #     QtAppSignalBus.getSignal(str(self.index), 'MCUSignals').connect(self.uptateCardWithSignal)
 
         # 创建所有View组件
         self.view = QWidget(parent=self)
