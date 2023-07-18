@@ -9,6 +9,7 @@ import seaborn as sns
 from PyQt6.QtCore import pyqtSignal, QMutexLocker
 
 from app.common.QtSignalBus import QtAppSignalBus
+from app.server.MCUStateDict import MCUStateDict
 
 
 class MCUState(dict):
@@ -92,18 +93,20 @@ class dataProcessor:
                 # 实例化Signal参数对象，初始化值，保存队列的快照
                 self.signalObjects = paraSignal(source, self.dataProcessQueue.dataQueue.queue)
                 self.signalObjects.parasCalculate()
-                self.signalObjects.print_statistics()
+                # self.signalObjects.print_statistics()
                 self.plotSignal()
-                # self.PyQtSignalEmit()  # 把处理好的数据发送给Slot
+                # 把处理后的数据放入MCUStateDict
+                MCUStateDict[source] = self.MCUStateUpdater()
+                # self.PyQtSignalEmit()
                 self.dataProcessQueue.dataQueue = Queue(maxsize=self.dataProcessQueue.queueLength)  # 清空队列
                 pass
-            print('Processed data')
+            # print('Processed data')
         Timer(2, self.processData).start()  # 递归调用自己，保持连接
 
     def plotSignal(self):
         df = pd.DataFrame({'Time': range(100 * self.signalObjects.periodCount),
                            'Voltage': self.signalObjects.voltage[:100 * self.signalObjects.periodCount]})
-        self.fig, ax = plt.subplots(figsize=(10, 6))
+        self.fig, ax = plt.subplots(figsize=(5, 3))
         ax = sns.lineplot(x='Time', y='Voltage', data=df)
         ax.set_xlabel('Time')
         ax.set_ylabel('Voltage (V)')
@@ -112,9 +115,9 @@ class dataProcessor:
         ax.patch.set_alpha(0.0)
         self.fig.patch.set_alpha(0.0)
 
-        plt.show()
+        # plt.show()
 
-    def PyQtSignalEmit(self):
+    def MCUStateUpdater(self):
         MCUStateInstance = MCUState()
         MCUStateInstance['group'] = self.signalObjects.group
         MCUStateInstance['index'] = self.signalObjects.index
@@ -124,4 +127,5 @@ class dataProcessor:
         MCUStateInstance['samplingRate'] = self.signalObjects.samplingRate
         MCUStateInstance['workState'] = self.signalObjects.workState
         MCUStateInstance['fig'] = self.fig
-        QtAppSignalBus.getSignal('1', 'MCUSignals').emit(MCUStateInstance)
+        return MCUStateInstance
+        # QtAppSignalBus.getSignal('1', 'MCUSignals').emit(MCUStateInstance)

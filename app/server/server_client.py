@@ -55,6 +55,7 @@ class serverClient:
                             adcLow2 = buffer[3] & 0b11  # 只保留低2位
                             adcValue = (adcHigh << 2) | adcLow2  # 将高8位与低2位合并
                             adcResult = adcValue / 1023 * 5  # 计算ADC结果
+                            adcResult = adcResult * (2000 + 510) / 510 / 25 * 15  # 电压分压
                             dataItem = {
                                 "Source": channel,
                                 "Time": pd.to_datetime(now().datetime),

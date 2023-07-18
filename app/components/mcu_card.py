@@ -3,11 +3,17 @@ from PyQt6.QtCore import Qt, pyqtSignal, QRectF
 from PyQt6.QtWidgets import QWidget, QFrame, QLabel, QVBoxLayout, QHBoxLayout
 from PyQt6.QtGui import QPainter, QBrush, QColor, QPixmap
 from PyQt6.QtSvg import QSvgRenderer
+from PyQt6.QtCore import QBasicTimer
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+from matplotlib.pyplot import close
+import pyqtgraph as pg
 
 from qfluentwidgets import IconWidget, TextWrap, FlowLayout, isDarkTheme
 from app.common.QtSignalBus import QtAppSignalBus
 from app.common.signal_bus import signalBus
 from app.common.config import cfg
+from app.server.MCUStateDict import MCUStateDict
 
 
 class MCUCard(QFrame):
@@ -34,6 +40,7 @@ class MCUCard(QFrame):
         self.view.iconView = QWidget(parent=self.view)
         self.view.viewLeft = QWidget(parent=self.view)
         self.view.viewRight = QWidget(parent=self.view)
+        self.view.viewGraph = QWidget(parent=self.view)
         self.view.viewLeft.setObjectName('MCUViewLeft')
         self.view.viewLeft.viewLeftTop = QWidget(parent=self.view.viewLeft)
         self.view.viewLeft.viewLeftBottom = QWidget(parent=self.view.viewLeft)
@@ -57,6 +64,9 @@ class MCUCard(QFrame):
 
         self.view.viewRight.vBoxLayout = QVBoxLayout(self.view.viewRight)
         self.view.hBoxLayout.addWidget(self.view.viewRight)  # 将右侧布局添加至整体布局中
+
+        self.view.viewGraph.vBoxLayout = QVBoxLayout(self.view.viewGraph)
+        self.view.hBoxLayout.addWidget(self.view.viewGraph)  # 将图表布局添加至整体布局中
 
         # 图标
         iconSize = 100
@@ -92,13 +102,33 @@ class MCUCard(QFrame):
         self.ratedNumberLabel = QLabel("额定{}A-{}Hz".format(self.ratedCurrent, self.ratedFreq), parent=self)
         self.view.viewLeft.viewLeftBottom.hBoxLayout.addWidget(self.ratedNumberLabel)
 
-        self.voltageLabel = QLabel("当前有效值:3.535630V", parent=self)
+        self.voltageLabel = QLabel("当前有效值:{}V".format(0), parent=self)
         self.view.viewRight.vBoxLayout.addWidget(self.voltageLabel)
-        self.freqLabel = QLabel("当前频率:126.263643Hz", parent=self)
+        self.freqLabel = QLabel("当前频率:{}Hz".format(0), parent=self)
         self.view.viewRight.vBoxLayout.addWidget(self.freqLabel)
 
-    def uptateCardWithSignal(self):
-        pass
+        self.graphCanvas = FigureCanvas(Figure())  # 创建空画布
+        # self.ax = self.graphCanvas.add_subplot(111)
+        graphPixmap = QPixmap(self.graphCanvas.size())
+        self.graphCanvas.render(graphPixmap)
+        self.graphLabel = QLabel(parent=self)
+        self.graphLabel.setPixmap(graphPixmap)
+        self.view.viewGraph.vBoxLayout.addWidget(self.graphLabel)
+
+        #  设置定时事件
+        self.timer = QBasicTimer()
+        self.timer.start(500, self)
+
+    def timerEvent(self, event):
+        if event.timerId() == self.timer.timerId() and self.index in MCUStateDict.keys():
+            self.voltageLabel.setText("当前有效值:{:.2f}V".format(MCUStateDict[self.index]['rms']))
+            self.freqLabel.setText("当前频率:{:.2f}Hz".format(MCUStateDict[self.index]['frequency']))
+            self.graphCanvas = FigureCanvas(MCUStateDict[self.index]['fig'])
+            graphPixmap = QPixmap(self.graphCanvas.size())
+            self.graphCanvas.render(graphPixmap)
+            self.graphLabel.setPixmap(graphPixmap)
+            close(MCUStateDict[self.index]['fig'])
+            # self.graphCanvas.draw()
 
 
 class MCUCardView(QWidget):

@@ -11,10 +11,10 @@ class QtSignalBus(QObject):  # Qt信号的总线
 
     def addSignal(self, signalIdentifier, signalClassIdentifier, signalArgtype, signalSlot=None):
         newSignal = pyqtSignal(signalArgtype)  # 创建一个新的信号
+        setattr(self, f"{signalClassIdentifier}-{signalIdentifier}", newSignal)
         if signalSlot:
             newSignal.connect(signalSlot)
         # 把信号作为总线的属性，名字为"{signalClassIdentifier}-{signalSubclassIdentifier}_{signalIdentifier}"
-        setattr(self, f"{signalClassIdentifier}-{signalIdentifier}", newSignal)
         self.QtSignalStream[signalClassIdentifier][signalIdentifier] = newSignal  # 把信号添加到对应的字典中
 
     def getSignal(self, signalIdentifier, signalClassIdentifier):
