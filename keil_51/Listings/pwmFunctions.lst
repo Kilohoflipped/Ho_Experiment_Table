@@ -1,0 +1,52 @@
+C51 COMPILER V9.54   PWMFUNCTIONS                                                          07/19/2023 14:27:45 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE PWMFUNCTIONS
+OBJECT MODULE PLACED IN .\Objects\pwmFunctions.obj
+COMPILER INVOKED BY: E:\Software\Keil_v5\C51\BIN\C51.EXE pwmFunctions.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRIN
+                    -T(.\Listings\pwmFunctions.lst) TABS(2) OBJECT(.\Objects\pwmFunctions.obj)
+
+line level    source
+
+   1          #include "pwm.h"
+   2          #include <reg52.h>
+   3          void InitPwm()
+   4          {
+   5   1        // PWM配置
+   6   1        // CMOD B1:CPS0,B2:CPS1,B3:CPS2
+   7   1        CMOD = 0x04; // PCA模块时钟设置，使用T0的溢出频率，空闲时PCA模块保持运行，禁止PCA计数器溢出中断
+   8   1        CCON = 0x00; // 停止PCA计数器阵列，初始化，设置完成后于函数最后起动
+   9   1        CL = 0;
+  10   1        CH = 0;
+  11   1        // 控制第一路输出的PWM的占空比
+  12   1      
+  13   1        // CCAP0H = CCAP0L = 0xCC;  //占空比  20
+  14   1        // CCAP0H = CCAP0L = 0xBF;  //占空比  25
+  15   1        CCAP0H = CCAP0L = 0xB2; // 占空比  30
+  16   1        // CCAP0H = CCAP0L = 0xA6;  //占空比  35
+  17   1        // CCAP0H = CCAP0L = 0x9A;  //占空比  40
+  18   1      
+  19   1        PCAPWM0 = 0x00;
+  20   1        // CCAPM0 = 0x42; //控制PCA0输出PWM波形，作为8位PWM，无中断
+  21   1        // CCAPM0 = 0x53;  //控制PCA0输出PWM波形，作为8位PWM，从高到低可产生中断
+  22   1        CCAPM0 = 0x73; // 控制PCA0输出PWM波形，作为8位PWM，从高到低与从低到高均可产生中断
+  23   1        // 控制第二路输出的PWM的占空比
+  24   1        CCAP1H = CCAP1L = 0x80;
+  25   1        PCAPWM1 = 0x00;
+  26   1        CCAPM1 = 0x42; // 控制PCA1输出PWM波形
+  27   1        CR = 1;      // 起动PCA模块
+  28   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     35    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,71 @@
+C51 COMPILER V9.54   MAIN                                                                  07/19/2023 14:27:45 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: E:\Software\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\List
+                    -ings\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include "main.h"
+   2          #include <intrins.h>
+   3          
+   4          void main()
+   5          {
+   6   1        float IRCF = 11059.2;  // kHz,系统时钟频率,这里先写成常数
+   7   1        float OPwmF = 3;  //kHz,输出PWM波的目标频率
+   8   1        BYTE ADCChannel = 6; //使用P1.6作为ADC模块的输入口
+   9   1      
+  10   1        //AUXR = 0xc0;  // 定时器的速度为传统8051的12倍，不分频
+  11   1        AUXR = 0x00;  // 定时器的速度为传统8051的速度，12分频
+  12   1      
+  13   1        //时钟配置
+  14   1        WAKE_CLKO = 0x03;
+  15   1        TMOD = 0x22;  // 将计时器0和计时器1作为8bit自动重载计时器使用
+  16   1      
+  17   1        //TL0 = TH0 = 0xE6;  // 重置计数器0  144Hz
+  18   1        //TL0 = TH0 = 0xF6;  // 重置计数器0  360hZ
+  19   1        TL0 = TH0 = 0xFB;  // 重置计数器0  720hZ
+  20   1        
+  21   1        TL1 = TH1 = 0x00;  // 重置计数器1
+  22   1      
+  23   1        ET0 = 1;  // 是否启用定时0中断
+  24   1        EA = 1;  // 是否启用全局中断
+  25   1        ES = 1;  //是否启动UART中断
+  26   1        TR0 = 1;  // 是否开启定时器0
+  27   1        TR1 = 1;  // 是否开启定时器1
+  28   1      
+  29   1        InitPwm();  //初始化PWM模块
+  30   1        InitUart();  //初始化串口通信模块
+  31   1        InitADC();  //初始化AD采样模块
+  32   1        while(1)
+  33   1        {
+  34   2          //LowFreqPWM();
+  35   2          SendADCResult(ADCChannel);
+  36   2        }
+  37   1      }
+  38          
+  39          //void roundFloatF(float num1,float num2)  //四舍五入取整函数
+  40          //{
+  41          //}
+  42          
+  43          //void patternAutoSelect()  //根据输入的目标频率自动选择分频与否及计算分频常数k
+  44          //{
+  45          //}
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     70    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       9
+   IDATA SIZE       =   ----    ----
+C51 COMPILER V9.54   MAIN                                                                  07/19/2023 14:27:45 PAGE 2   
+
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

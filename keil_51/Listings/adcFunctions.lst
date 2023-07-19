@@ -1,0 +1,63 @@
+C51 COMPILER V9.54   ADCFUNCTIONS                                                          07/19/2023 14:27:45 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE ADCFUNCTIONS
+OBJECT MODULE PLACED IN .\Objects\adcFunctions.obj
+COMPILER INVOKED BY: E:\Software\Keil_v5\C51\BIN\C51.EXE adcFunctions.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRIN
+                    -T(.\Listings\adcFunctions.lst) TABS(2) OBJECT(.\Objects\adcFunctions.obj)
+
+line level    source
+
+   1          #include "adcOptions.h"
+   2          #include "kiloLib.h"
+   3          #include <intrins.h>
+   4          
+   5          extern void SendData(BYTE msg);
+   6          extern void SendString(char *s);
+   7          
+   8          void InitADC()
+   9          {
+  10   1        // ADCÄ£¿éÅäÖÃ³õÊ¼»¯
+  11   1        P1ASF = 0x02;            // ÅäÖÃÄÄÐ©IO¿Ú×÷ÎªAD²ÉÑùÊäÈë£¬´Ë´¦Ê¹ÓÃP1.6¿Ú
+  12   1        ADC_RES = 0;             // ³õÊ¼»¯AD²ÉÑù½á¹û¼Ä´æÆ÷
+  13   1        ADC_CONTR = ADC_POWER | ADC_SPEEDHH; // ¸øADC²ÉÑùÉÏµç²¢Ê¹ÓÃ³¬¿ì²ÉÑù£¬Ê¹ÓÃP1.6¿Ú×÷ÎªÄ£ÄâÊäÈë
+  14   1        AUXR1 &= 0xFB;             // Ñ¡ÔñÊ®Î»ADC×ª»»ÖµµÄ´æ´¢·½Ê½£¬´Ë´¦Îª¸ß°ËÎ»·ÅÔÚADC_RES¼Ä´æÆ÷ÖÐ£¬µÍ¶þÎ»·ÅÔÚADC_LOW2¼
+             -Ä´æÆ÷ÖÐ
+  15   1        _nop_();               // µÈ´ý4¸önop£¬Ê¹µÃADÄ£¿éÎÈ¶¨
+  16   1        _nop_();
+  17   1        _nop_();
+  18   1        _nop_();
+  19   1      }
+  20          
+  21          void GetADCResult(BYTE channel)
+  22          {
+  23   1        ADC_CONTR |= /* ADC_POWER| ADC_SPEEDHH| */ channel | ADC_START; // Ñ¡ÔñÍ¨µÀºÅ²¢Æô¶¯ADC×ª»»
+  24   1        while (!(ADC_CONTR & ADC_FLAG))                 // µÈ´ý×ª»»Íê³É£¬±êÖ¾Î»ÖÃ1
+  25   1        {
+  26   2        };
+  27   1        ADC_CONTR &= ~ADC_FLAG; // Çå³ý×ª»»Íê³É±êÖ¾Î»
+  28   1      }
+  29          
+  30          void SendADCResult(BYTE channel) // ·¢ËÍÍ¨µÀºÅºÍ×ª»»½á¹û
+  31          {
+  32   1        SendData(0x21);      // ·¢ËÍ£¡£¬±êÖ¾Êý¾Ý¿ªÊ¼
+  33   1        SendData(10);      // ·¢ËÍÉè±¸±àºÅ
+  34   1        GetADCResult(channel); // ½øÐÐAD×ª»»
+  35   1        SendData(ADC_RES);     // ·¢ËÍ¸ß°ËÎ»½á¹û
+  36   1        SendData(ADC_LOW2);    // ·¢ËÍµÍ¶þÎ»½á¹û
+  37   1        SendData(0x0a);      // ·¢ËÍ»»ÐÐ·û(LF)£¬±êÖ¾Êý¾Ý½áÊø
+  38   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     63    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       1
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

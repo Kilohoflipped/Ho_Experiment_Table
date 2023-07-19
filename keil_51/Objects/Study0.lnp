@@ -1,0 +1,7 @@
+".\Objects\STARTUP.obj",
+".\Objects\main.obj",
+".\Objects\uartFunctions.obj",
+".\Objects\adcFunctions.obj",
+".\Objects\pwmFunctions.obj" 
+TO ".\Objects\Study0" 
+PRINT(".\Listings\Study0.m51") RAMSIZE(256) 
