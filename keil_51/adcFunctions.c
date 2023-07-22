@@ -34,5 +34,5 @@ void SendADCResult(BYTE channel) // 发送通道号和转换结果
 	GetADCResult(channel); // 进行AD转换
 	SendData(ADC_RES);	   // 发送高八位结果
 	SendData(ADC_LOW2);	   // 发送低二位结果
-	SendData(0x0a);		   // 发送换行符(LF)，标志数据结束
+	SendData(0x7E);		   // 发送波浪号(~)，标志数据结束
 }

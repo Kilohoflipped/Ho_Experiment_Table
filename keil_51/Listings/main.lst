@@ -1,4 +1,4 @@
-C51 COMPILER V9.54   MAIN                                                                  07/19/2023 14:27:45 PAGE 1   
+C51 COMPILER V9.54   MAIN                                                                  07/21/2023 09:52:02 PAGE 1   
 
 
 C51 COMPILER V9.54, COMPILATION OF MODULE MAIN
@@ -33,8 +33,8 @@ line level    source
   23   1        ET0 = 1;  // 是否启用定时0中断
   24   1        EA = 1;  // 是否启用全局中断
   25   1        ES = 1;  //是否启动UART中断
-  26   1        TR0 = 1;  // 是否开启定时器0
-  27   1        TR1 = 1;  // 是否开启定时器1
+  26   1        TR0 = 1;  // 是否使能定时器0
+  27   1        TR1 = 1;  // 是否使能定时器1
   28   1      
   29   1        InitPwm();  //初始化PWM模块
   30   1        InitUart();  //初始化串口通信模块
@@ -62,7 +62,7 @@ MODULE INFORMATION:   STATIC OVERLAYABLE
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----       9
    IDATA SIZE       =   ----    ----
-C51 COMPILER V9.54   MAIN                                                                  07/19/2023 14:27:45 PAGE 2   
+C51 COMPILER V9.54   MAIN                                                                  07/21/2023 09:52:02 PAGE 2   
 
    BIT SIZE         =   ----    ----
 END OF MODULE INFORMATION.

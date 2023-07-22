@@ -1,4 +1,4 @@
-C51 COMPILER V9.54   ADCFUNCTIONS                                                          07/19/2023 14:27:45 PAGE 1   
+C51 COMPILER V9.54   ADCFUNCTIONS                                                          07/21/2023 09:52:02 PAGE 1   
 
 
 C51 COMPILER V9.54, COMPILATION OF MODULE ADCFUNCTIONS
@@ -45,7 +45,7 @@ line level    source
   34   1        GetADCResult(channel); // 进行AD转换
   35   1        SendData(ADC_RES);     // 发送高八位结果
   36   1        SendData(ADC_LOW2);    // 发送低二位结果
-  37   1        SendData(0x0a);      // 发送换行符(LF)，标志数据结束
+  37   1        SendData(0x7E);      // 发送波浪号(~)，标志数据结束
   38   1      }
 
 

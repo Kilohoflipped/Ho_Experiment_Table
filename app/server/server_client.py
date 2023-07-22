@@ -43,19 +43,20 @@ class serverClient:
             buffer = bytearray()  # 创建一个字节缓冲区以保存接收到的数据
             while True:
                 try:
-                    msg = self.clientSocket.recv(3)  # 每次接收1个字节
+                    msg = self.clientSocket.recv(3)  # 每次接收3个字节
                     if not msg:  # 如果没有接收到数据，跳出循环
                         break
                     buffer.extend(msg)  # 将接收到的字节添加到缓冲区
 
-                    if len(buffer) >= 6:  # 当缓冲区长度至少为6个字节时
-                        if buffer[0] == ord('!') and buffer[-2:] == b'\r\n':  # 如果缓冲区的第一个值为b'!'且最后两个字节为'\r\n'
+                    if len(buffer) >= 6:  # 当缓冲区长度至少为5个字节时
+                        # 如果缓冲区的第一个值为b'!'且最后一个字节为b'~'，且缓冲区长度为5
+                        if buffer[0] == ord('!') and buffer[-2:] == b'\r\n' and len(buffer) == 6:
                             channel = buffer[1]
                             adcHigh = buffer[2]
                             adcLow2 = buffer[3] & 0b11  # 只保留低2位
                             adcValue = (adcHigh << 2) | adcLow2  # 将高8位与低2位合并
                             adcResult = adcValue / 1023 * 5  # 计算ADC结果
-                            adcResult = adcResult * (2000 + 510) / 510 / 25 * 15  # 电压分压
+                            # adcResult = adcResult * (2000 + 510) / 510 / 25 * 15  # 电压分压
                             dataItem = {
                                 "Source": channel,
                                 "Time": pd.to_datetime(now().datetime),

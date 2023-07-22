@@ -36,7 +36,7 @@ class MCUDevice:
         self.serverClientThreadInstance = None
         self.serverIP = serverIP
         self.serverPort = serverPort
-        self.dataProcessQueue = QueueWithLock(2000)
+        self.dataProcessQueue = QueueWithLock(500)
         self.ThreadsManager()
 
     def ThreadsManager(self):
